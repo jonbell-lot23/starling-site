@@ -109,11 +109,11 @@
         }
       }
 
-      // Lost birds: stronger wander, weaker flocking
+      // Lost birds: moderate wander, weaker flocking
       if (b.lost) {
-        b.wander += (Math.random() - 0.5) * 0.4;
-        b.vx += Math.cos(b.wander) * 0.15;
-        b.vy += Math.sin(b.wander) * 0.15;
+        b.wander += (Math.random() - 0.5) * 0.25;
+        b.vx += Math.cos(b.wander) * 0.08;
+        b.vy += Math.sin(b.wander) * 0.08;
 
         // Still gently pulled back toward flock so they eventually return
         let fcx = 0, fcy = 0, fc = 0;
@@ -134,7 +134,7 @@
             const sdy = b.y - scareY;
             const sd2 = sdx * sdx + sdy * sdy;
             if (sd2 < 40000) {
-              const inv = 1.5 / (Math.sqrt(sd2) + 1);
+              const inv = 0.8 / (Math.sqrt(sd2) + 1);
               b.vx += sdx * inv;
               b.vy += sdy * inv;
             }
@@ -144,7 +144,7 @@
             const mdy = b.y - mouse.y;
             const md2 = mdx * mdx + mdy * mdy;
             if (md2 < 40000) {
-              const inv = 1.5 / (Math.sqrt(md2) + 1);
+              const inv = 0.8 / (Math.sqrt(md2) + 1);
               b.vx += mdx * inv;
               b.vy += mdy * inv;
             }
@@ -228,7 +228,7 @@
         const sdy = b.y - scareY;
         const sd2 = sdx * sdx + sdy * sdy;
         if (sd2 < 40000) {
-          const inv = 1.5 / (Math.sqrt(sd2) + 1);
+          const inv = 0.8 / (Math.sqrt(sd2) + 1);
           b.vx += sdx * inv;
           b.vy += sdy * inv;
         }
@@ -240,7 +240,7 @@
         const mdy = b.y - mouse.y;
         const md2 = mdx * mdx + mdy * mdy;
         if (md2 < 40000) {
-          const inv = 1.5 / (Math.sqrt(md2) + 1);
+          const inv = 0.8 / (Math.sqrt(md2) + 1);
           b.vx += mdx * inv;
           b.vy += mdy * inv;
         }
@@ -275,22 +275,19 @@
   function draw() {
     ctx.clearRect(0, 0, W, H);
 
-    ctx.fillStyle = 'rgba(15, 15, 25, 0.7)';
-    for (let i = 0; i < N; i++) {
-      const b = boids[i];
-      const s = b.sz;
-      ctx.fillRect(b.x - s, b.y - s * 0.4, s * 2.5, s * 0.8);
-    }
-
-    ctx.strokeStyle = 'rgba(10, 10, 20, 0.15)';
-    ctx.lineWidth = 0.8;
+    // Subtle diamonds — no tails
+    ctx.fillStyle = 'rgba(15, 15, 25, 0.65)';
     ctx.beginPath();
     for (let i = 0; i < N; i++) {
       const b = boids[i];
-      ctx.moveTo(b.x, b.y);
-      ctx.lineTo(b.x - b.vx * 3, b.y - b.vy * 3);
+      const s = b.sz;
+      const x = b.x, y = b.y;
+      ctx.moveTo(x, y - s);       // top
+      ctx.lineTo(x + s * 0.6, y); // right
+      ctx.lineTo(x, y + s);       // bottom
+      ctx.lineTo(x - s * 0.6, y); // left
     }
-    ctx.stroke();
+    ctx.fill();
   }
 
   function loop() {
