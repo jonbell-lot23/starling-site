@@ -4,7 +4,7 @@
   const ctx = canvas.getContext('2d');
 
   let W, H;
-  const N = 700;
+  const N = 500;
   const boids = [];
 
   const VR = 100;
@@ -56,8 +56,13 @@
         y: cy + Math.sin(angle) * r,
         vx: -Math.sin(angle) * spd + (Math.random() - 0.5) * 0.3,
         vy: Math.cos(angle) * spd + (Math.random() - 0.5) * 0.3,
-        sz: 1.25 + Math.random() * 1.5,
+        sz: 0.8 + Math.random() * 1,
         wander: Math.random() * Math.PI * 2,
+        // Lost bird system: timer counts down, when 0 bird goes lost
+        // Stagger so they don't all get lost at once
+        lostTimer: Math.floor(Math.random() * 600) + 200,
+        lost: false,
+        lostDuration: 0,
       });
     }
   }
@@ -78,8 +83,97 @@
       if (scareTimer <= 0) scareActive = false;
     }
 
+    // Count current lost birds
+    let lostCount = 0;
+    for (let i = 0; i < N; i++) if (boids[i].lost) lostCount++;
+
     for (let i = 0; i < N; i++) {
       const b = boids[i];
+
+      // Lost bird state machine
+      if (b.lost) {
+        b.lostDuration--;
+        if (b.lostDuration <= 0) {
+          // Rejoin — start flocking again
+          b.lost = false;
+          b.lostTimer = 300 + Math.floor(Math.random() * 500);
+        }
+      } else {
+        b.lostTimer--;
+        if (b.lostTimer <= 0 && lostCount < N * 0.2) {
+          // Go lost — wander off on your own
+          b.lost = true;
+          b.lostDuration = 120 + Math.floor(Math.random() * 180); // lost for 2-5 sec
+          b.wander = Math.random() * Math.PI * 2;
+          lostCount++;
+        }
+      }
+
+      // Lost birds: stronger wander, weaker flocking
+      if (b.lost) {
+        b.wander += (Math.random() - 0.5) * 0.4;
+        b.vx += Math.cos(b.wander) * 0.15;
+        b.vy += Math.sin(b.wander) * 0.15;
+
+        // Still gently pulled back toward flock so they eventually return
+        let fcx = 0, fcy = 0, fc = 0;
+        for (let j = 0; j < N; j++) {
+          if (!boids[j].lost) { fcx += boids[j].x; fcy += boids[j].y; fc++; }
+        }
+        if (fc > 0) {
+          b.vx += ((fcx / fc) - b.x) * 0.0005;
+          b.vy += ((fcy / fc) - b.y) * 0.0005;
+        }
+
+        // Speed + bounds still apply (handled below)
+        // Skip normal flocking
+        goto_speed: {
+          // Phantom scare still affects lost birds
+          if (scareActive) {
+            const sdx = b.x - scareX;
+            const sdy = b.y - scareY;
+            const sd2 = sdx * sdx + sdy * sdy;
+            if (sd2 < 40000) {
+              const inv = 1.5 / (Math.sqrt(sd2) + 1);
+              b.vx += sdx * inv;
+              b.vy += sdy * inv;
+            }
+          }
+          if (mouse.active) {
+            const mdx = b.x - mouse.x;
+            const mdy = b.y - mouse.y;
+            const md2 = mdx * mdx + mdy * mdy;
+            if (md2 < 40000) {
+              const inv = 1.5 / (Math.sqrt(md2) + 1);
+              b.vx += mdx * inv;
+              b.vy += mdy * inv;
+            }
+          }
+          if (b.x < EDGE_M) b.vx += EDGE_T;
+          if (b.x > W - EDGE_M) b.vx -= EDGE_T;
+          if (b.y < EDGE_M) b.vy += EDGE_T;
+          if (b.y > H - EDGE_M) b.vy -= EDGE_T;
+          const s2 = b.vx * b.vx + b.vy * b.vy;
+          if (s2 > 0.001) {
+            if (s2 > MAX_SPD * MAX_SPD) {
+              const s = Math.sqrt(s2);
+              b.vx = (b.vx / s) * MAX_SPD;
+              b.vy = (b.vy / s) * MAX_SPD;
+            } else if (s2 < MIN_SPD * MIN_SPD) {
+              const s = Math.sqrt(s2);
+              b.vx = (b.vx / s) * MIN_SPD;
+              b.vy = (b.vy / s) * MIN_SPD;
+            }
+          } else {
+            b.vx = (Math.random() - 0.5) * MIN_SPD;
+            b.vy = (Math.random() - 0.5) * MIN_SPD;
+          }
+          b.x += b.vx;
+          b.y += b.vy;
+        }
+        continue;
+      }
+
       let sepX = 0, sepY = 0;
       let alnX = 0, alnY = 0;
       let cohX = 0, cohY = 0;
