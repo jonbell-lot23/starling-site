@@ -4,7 +4,7 @@
   const ctx = canvas.getContext('2d');
 
   let W, H;
-  const N = 1750;
+  const N = 875;
 
   // SoA layout — cache-friendly typed arrays
   const px = new Float32Array(N);
