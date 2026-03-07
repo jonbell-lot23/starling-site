@@ -43,7 +43,16 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #000;
+  background: linear-gradient(
+    180deg,
+    #1a1a2e 0%,
+    #16213e 20%,
+    #1b3a5c 40%,
+    #4a3060 60%,
+    #c0605a 78%,
+    #e8956a 90%,
+    #f4c87a 100%
+  );
   overflow: hidden;
 }
 

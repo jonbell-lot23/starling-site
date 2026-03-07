@@ -144,14 +144,14 @@
 
       ctx.beginPath();
       ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(220, 225, 230, ${alpha})`;
+      ctx.fillStyle = `rgba(15, 15, 25, ${alpha})`;
       ctx.fill();
 
       // Subtle trail
       ctx.beginPath();
       ctx.moveTo(b.x, b.y);
       ctx.lineTo(b.x - b.vx * 2, b.y - b.vy * 2);
-      ctx.strokeStyle = `rgba(200, 205, 210, ${alpha * 0.3})`;
+      ctx.strokeStyle = `rgba(10, 10, 20, ${alpha * 0.3})`;
       ctx.lineWidth = b.size * 0.6;
       ctx.stroke();
     }
