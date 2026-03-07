@@ -4,7 +4,7 @@
   const ctx = canvas.getContext('2d');
 
   let W, H;
-  const N = 500;
+  const N = 700;
   const boids = [];
 
   const VR = 100;
@@ -20,6 +20,23 @@
 
   let mouse = { x: -1000, y: -1000, active: false };
   let t = 0;
+
+  // Phantom scare — random burst that scatters birds like a predator dove in
+  let scareX = 0, scareY = 0, scareActive = false, scareTimer = 0;
+  let nextScare = 120 + Math.random() * 300; // 2-7 seconds at 60fps
+
+  function triggerScare() {
+    // Pick a random point near the flock center
+    let cx = 0, cy = 0;
+    for (let i = 0; i < N; i++) { cx += boids[i].x; cy += boids[i].y; }
+    cx /= N; cy /= N;
+    // Scare from a random direction near the flock
+    const angle = Math.random() * Math.PI * 2;
+    scareX = cx + Math.cos(angle) * 50;
+    scareY = cy + Math.sin(angle) * 50;
+    scareActive = true;
+    scareTimer = 20; // lasts ~20 frames
+  }
 
   function resize() {
     W = canvas.width = window.innerWidth;
@@ -47,6 +64,19 @@
 
   function update() {
     t++;
+
+    // Phantom scare timer — only if mouse isn't already scaring them
+    if (!mouse.active) {
+      nextScare--;
+      if (nextScare <= 0) {
+        triggerScare();
+        nextScare = 120 + Math.random() * 300;
+      }
+    }
+    if (scareActive) {
+      scareTimer--;
+      if (scareTimer <= 0) scareActive = false;
+    }
 
     for (let i = 0; i < N; i++) {
       const b = boids[i];
@@ -97,6 +127,18 @@
       b.wander += (Math.random() - 0.5) * 0.25;
       b.vx += Math.cos(b.wander) * 0.05;
       b.vy += Math.sin(b.wander) * 0.05;
+
+      // Phantom scare
+      if (scareActive) {
+        const sdx = b.x - scareX;
+        const sdy = b.y - scareY;
+        const sd2 = sdx * sdx + sdy * sdy;
+        if (sd2 < 40000) {
+          const inv = 1.5 / (Math.sqrt(sd2) + 1);
+          b.vx += sdx * inv;
+          b.vy += sdy * inv;
+        }
+      }
 
       // Mouse avoidance
       if (mouse.active) {
