@@ -1,33 +1,28 @@
-// Starling Murmuration — topological neighbor model
-// Based on Ballerini et al. (2008): each bird tracks its nearest 7
-// neighbors regardless of distance, not a fixed radius. This is what
-// real starlings do and produces ribbons/funnels instead of blobs.
+// Starling Murmuration — tight swarm, radius-based
 (() => {
   const canvas = document.getElementById('murmuration');
   const ctx = canvas.getContext('2d');
 
   let W, H;
-  const N = 800;
+  const N = 500;
   const boids = [];
 
-  // Topological: each bird considers its K nearest neighbors
-  const K = 7;
-
-  const SEP_DIST = 10;
-  const SEP_F = 0.02;       // barely push away
-  const ALN_F = 0.12;       // strong alignment = they move as ribbons
-  const COH_F = 0.075;      // 5x stronger — they really want to group
-  const MAX_SPD = 4.5;
-  const MIN_SPD = 2;
-  const EDGE_M = 50;
-  const EDGE_T = 0.6;
+  const VR = 120;            // large visual range — they see the group
+  const VR2 = VR * VR;
+  const SEP_DIST = 12;
+  const SEP_F = 0.03;
+  const ALN_F = 0.1;         // strong alignment — move together
+  const COH_F = 0.01;        // strong cohesion — stay together
+  const MAX_SPD = 3.5;
+  const MIN_SPD = 1.5;
+  const EDGE_M = 60;
+  const EDGE_T = 0.5;
 
   let mouse = { x: -1000, y: -1000, active: false };
-  let t = 0;
 
-  // Reusable array for neighbor finding (avoid allocation per frame)
-  const neighborDists = new Float32Array(N);
-  const neighborIdx = new Uint16Array(K);
+  // Global center pull — always gently pull toward screen center
+  // This keeps the swarm visible and prevents dispersal
+  const CENTER_F = 0.0003;
 
   function resize() {
     W = canvas.width = window.innerWidth;
@@ -45,96 +40,64 @@
       boids.push({
         x: cx + Math.cos(angle) * r,
         y: cy + Math.sin(angle) * r,
-        vx: -Math.sin(angle) * spd + (Math.random() - 0.5) * 0.5,
-        vy: Math.cos(angle) * spd + (Math.random() - 0.5) * 0.5,
+        vx: -Math.sin(angle) * spd + (Math.random() - 0.5) * 0.3,
+        vy: Math.cos(angle) * spd + (Math.random() - 0.5) * 0.3,
         sz: 1.25 + Math.random() * 1.5,
         wander: Math.random() * Math.PI * 2,
       });
     }
   }
 
-  // Find K nearest neighbors for boid i
-  // Uses partial sort — O(N) per bird which is fine for 800
-  function findNearest(i) {
-    const b = boids[i];
-    // Compute all distances
-    for (let j = 0; j < N; j++) {
-      if (j === i) { neighborDists[j] = 1e9; continue; }
-      const dx = boids[j].x - b.x;
-      const dy = boids[j].y - b.y;
-      neighborDists[j] = dx * dx + dy * dy;
-    }
-    // Find K smallest (simple selection, faster than full sort)
-    for (let k = 0; k < K; k++) {
-      let minD = 1e9, minJ = 0;
-      for (let j = 0; j < N; j++) {
-        if (neighborDists[j] < minD) {
-          minD = neighborDists[j];
-          minJ = j;
-        }
-      }
-      neighborIdx[k] = minJ;
-      neighborDists[minJ] = 1e9; // exclude from next round
-    }
-  }
-
-  // Cache neighbors — only recalculate for half the flock each frame
-  const cachedNeighbors = new Array(N);
-  for (let i = 0; i < N; i++) cachedNeighbors[i] = new Uint16Array(K);
-
   function update() {
-    t++;
-
-    // Stagger: recalculate neighbors for half the flock each frame
-    const start = (t & 1) ? 0 : (N >> 1);
-    const end = start + (N >> 1);
-    for (let i = start; i < end; i++) {
-      findNearest(i);
-      cachedNeighbors[i].set(neighborIdx);
-    }
+    const gcx = W * 0.5, gcy = H * 0.45;
 
     for (let i = 0; i < N; i++) {
       const b = boids[i];
-
       let sepX = 0, sepY = 0;
       let alnX = 0, alnY = 0;
       let cohX = 0, cohY = 0;
+      let nb = 0;
 
-      for (let k = 0; k < K; k++) {
-        const o = boids[cachedNeighbors[i][k]];
+      for (let j = 0; j < N; j++) {
+        if (i === j) continue;
+        const o = boids[j];
         const dx = o.x - b.x;
         const dy = o.y - b.y;
         const d2 = dx * dx + dy * dy;
-        const d = Math.sqrt(d2) + 0.001;
 
-        // Separation — push away from close neighbors
-        if (d < SEP_DIST) {
-          sepX -= dx / d;
-          sepY -= dy / d;
+        if (d2 < VR2) {
+          if (d2 < SEP_DIST * SEP_DIST && d2 > 0.01) {
+            const inv = 1 / (d2 + 1);
+            sepX -= dx * inv;
+            sepY -= dy * inv;
+          }
+          alnX += o.vx;
+          alnY += o.vy;
+          cohX += o.x;
+          cohY += o.y;
+          nb++;
         }
-
-        // Alignment — match neighbor velocity
-        alnX += o.vx;
-        alnY += o.vy;
-
-        // Cohesion — move toward neighbor center
-        cohX += o.x;
-        cohY += o.y;
       }
 
-      const invK = 1 / K;
-      b.vx += ((alnX * invK) - b.vx) * ALN_F;
-      b.vy += ((alnY * invK) - b.vy) * ALN_F;
-      b.vx += ((cohX * invK) - b.x) * COH_F;
-      b.vy += ((cohY * invK) - b.y) * COH_F;
+      if (nb > 0) {
+        const inv = 1 / nb;
+        b.vx += ((alnX * inv) - b.vx) * ALN_F;
+        b.vy += ((alnY * inv) - b.vy) * ALN_F;
+        b.vx += ((cohX * inv) - b.x) * COH_F;
+        b.vy += ((cohY * inv) - b.y) * COH_F;
+      }
+
       b.vx += sepX * SEP_F;
       b.vy += sepY * SEP_F;
 
-      // Gentle wander — each bird has a slowly rotating preferred direction
-      // This creates organic drift without the wobbly attractor feel
-      b.wander += (Math.random() - 0.5) * 0.2;
-      b.vx += Math.cos(b.wander) * 0.04;
-      b.vy += Math.sin(b.wander) * 0.04;
+      // Global center pull — keeps the swarm from drifting off screen
+      b.vx += (gcx - b.x) * CENTER_F;
+      b.vy += (gcy - b.y) * CENTER_F;
+
+      // Gentle wander
+      b.wander += (Math.random() - 0.5) * 0.15;
+      b.vx += Math.cos(b.wander) * 0.03;
+      b.vy += Math.sin(b.wander) * 0.03;
 
       // Mouse avoidance
       if (mouse.active) {
@@ -148,13 +111,11 @@
         }
       }
 
-      // Soft edge wrapping
       if (b.x < EDGE_M) b.vx += EDGE_T;
       if (b.x > W - EDGE_M) b.vx -= EDGE_T;
       if (b.y < EDGE_M) b.vy += EDGE_T;
       if (b.y > H - EDGE_M) b.vy -= EDGE_T;
 
-      // Speed clamp
       const s2 = b.vx * b.vx + b.vy * b.vy;
       if (s2 > 0.001) {
         if (s2 > MAX_SPD * MAX_SPD) {
