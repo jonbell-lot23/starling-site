@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Starling — What if you could see what good looks like?</title>
+  <meta name="description" content="Starling is a design orchestrator that explores what good could look like. Point it at a screen, walk away, come back to a full design exploration.">
+  <meta property="og:title" content="Starling — Design Orchestrator">
+  <meta property="og:description" content="What if you could see what good looks like?">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;350;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Hero -->
+  <section class="hero">
+    <canvas id="murmuration"></canvas>
+    <div class="hero-content">
+      <h1 class="hero-title">Starling</h1>
+      <p class="hero-subtitle">What if you could see what good looks like?</p>
+    </div>
+    <div class="scroll-hint">
+      <span>Scroll</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round">
+        <path d="M12 5v14M5 12l7 7 7-7"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- The Problem -->
+  <section class="section-alt">
+    <div class="section-inner fade-in">
+      <p class="section-label">The Problem</p>
+      <h2 class="section-heading">Designers have been asked to dream small.</h2>
+      <div class="section-body">
+        <p>You have a page on the corporate app you are working on. You know it isn't great. You have data showing people don't like it. And now people are looking at you, the designer: <em>We know the page isn't good. Can you help us understand what good looks like?</em></p>
+        <p>For a long time, designers have been in a defensive crouch. Beat down by traditional software development, they know that any adjustments they want to make will probably take 18 months. So they shoot lower. Aim smaller. Just to preempt being told their ideas are too expensive.</p>
+        <p>The problem with that is you end up with watered-down, me-too pages that barely keep pace with competitors — if that. And as the years go on, the software feels more and more creaky and rickety, and it becomes harder to explain why anyone should try your product.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section>
+    <div class="section-inner">
+      <div class="fade-in">
+        <p class="section-label">How It Works</p>
+        <h2 class="section-heading">Six steps from stale to stellar.</h2>
+      </div>
+      <div class="steps fade-in fade-in-stagger">
+        <div class="step">
+          <div class="step-number">01</div>
+          <div>
+            <div class="step-title">Baseline report</div>
+            <div class="step-desc">Starling analyzes the current screen and tells you why it's having trouble.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">02</div>
+          <div>
+            <div class="step-title">Divergent exploration</div>
+            <div class="step-desc">Generate five distinct directions, three screens each, working within your design system.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">03</div>
+          <div>
+            <div class="step-title">Feedback</div>
+            <div class="step-desc">Synthetic users weigh in with scores and specific quotes.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">04</div>
+          <div>
+            <div class="step-title">Feel it move</div>
+            <div class="step-desc">Click into each variation and feel how it moves.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">05</div>
+          <div>
+            <div class="step-title">Combine and iterate</div>
+            <div class="step-desc">Explicitly combine the best elements and do the next round.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">06</div>
+          <div>
+            <div class="step-title">Converge</div>
+            <div class="step-desc">Five directions become three, become two, become one. Weak directions culled, strong ones refined.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why This Matters -->
+  <section class="section-alt">
+    <div class="section-inner fade-in">
+      <p class="section-label">Why This Matters</p>
+      <h2 class="section-heading">The cost of exploration just dropped to nearly zero.</h2>
+      <div class="section-body">
+        <p>Designers have been asked to dream small for too long. Not because they lack vision, but because the cost of exploring alternatives has been prohibitively high. What if that cost dropped to nearly zero?</p>
+        <p>That is Starling. Point it at a screen. Walk away. Come back to a full exploration of what good could look like.</p>
+        <p>It won't replace taste. It won't replace the designer. But it will give you something designers have almost never had: proof that better is possible, and a map of how to get there.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="fade-in">
+      <h2 class="section-heading" style="margin-bottom: 40px;">See what good looks like.</h2>
+      <a href="https://github.com/jonbell-lot23/starling" class="cta-button" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.605-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12 24 5.37 18.63 0 12 0z"/></svg>
+        View on GitHub
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    Built by <a href="https://lot23.com" target="_blank" rel="noopener">Jon Bell</a> · <a href="https://lot23.com" target="_blank" rel="noopener">lot23.com</a>
+  </footer>
+
+  <script src="murmuration.js"></script>
+</body>
+</html>
