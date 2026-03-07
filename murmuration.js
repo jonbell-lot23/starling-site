@@ -13,10 +13,10 @@
   // Topological: each bird considers its K nearest neighbors
   const K = 7;
 
-  const SEP_DIST = 15;
-  const SEP_F = 0.04;       // softer push-away
+  const SEP_DIST = 10;
+  const SEP_F = 0.02;       // barely push away
   const ALN_F = 0.12;       // strong alignment = they move as ribbons
-  const COH_F = 0.015;      // they WANT to be together
+  const COH_F = 0.075;      // 5x stronger — they really want to group
   const MAX_SPD = 4.5;
   const MIN_SPD = 2;
   const EDGE_M = 50;
