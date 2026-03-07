@@ -13,10 +13,10 @@
   // Topological: each bird considers its K nearest neighbors
   const K = 7;
 
-  const SEP_DIST = 22;
-  const SEP_F = 0.08;
+  const SEP_DIST = 15;
+  const SEP_F = 0.04;       // softer push-away
   const ALN_F = 0.12;       // strong alignment = they move as ribbons
-  const COH_F = 0.004;      // gentle cohesion = they don't ball up
+  const COH_F = 0.015;      // they WANT to be together
   const MAX_SPD = 4.5;
   const MIN_SPD = 2;
   const EDGE_M = 50;
@@ -132,9 +132,9 @@
 
       // Gentle wander — each bird has a slowly rotating preferred direction
       // This creates organic drift without the wobbly attractor feel
-      b.wander += (Math.random() - 0.5) * 0.3;
-      b.vx += Math.cos(b.wander) * 0.08;
-      b.vy += Math.sin(b.wander) * 0.08;
+      b.wander += (Math.random() - 0.5) * 0.2;
+      b.vx += Math.cos(b.wander) * 0.04;
+      b.vy += Math.sin(b.wander) * 0.04;
 
       // Mouse avoidance
       if (mouse.active) {
