@@ -4,10 +4,10 @@
   const ctx = canvas.getContext('2d');
 
   let W, H;
-  const N = 300;
+  const N = 400;
   const boids = [];
 
-  const VR = 90, VR2 = VR * VR;
+  const VR2 = 90 * 90;
   const SEP_D2 = 18 * 18;
   const SEP_F = 0.05;
   const ALN_F = 0.065;
@@ -99,15 +99,22 @@
       if (b.y < EDGE_M) b.vy += EDGE_T;
       if (b.y > H - EDGE_M) b.vy -= EDGE_T;
 
+      // Speed clamp — guard against zero
       const s2 = b.vx * b.vx + b.vy * b.vy;
-      if (s2 > 16) {
-        const s = Math.sqrt(s2);
-        b.vx = (b.vx / s) * MAX_SPD;
-        b.vy = (b.vy / s) * MAX_SPD;
-      } else if (s2 < 4) {
-        const s = Math.sqrt(s2);
-        b.vx = (b.vx / s) * MIN_SPD;
-        b.vy = (b.vy / s) * MIN_SPD;
+      if (s2 > 0.001) {
+        if (s2 > 16) {
+          const s = Math.sqrt(s2);
+          b.vx = (b.vx / s) * MAX_SPD;
+          b.vy = (b.vy / s) * MAX_SPD;
+        } else if (s2 < 4) {
+          const s = Math.sqrt(s2);
+          b.vx = (b.vx / s) * MIN_SPD;
+          b.vy = (b.vy / s) * MIN_SPD;
+        }
+      } else {
+        // Nudge stationary birds
+        b.vx = (Math.random() - 0.5) * MIN_SPD;
+        b.vy = (Math.random() - 0.5) * MIN_SPD;
       }
 
       b.x += b.vx;
@@ -118,35 +125,17 @@
   function draw() {
     ctx.clearRect(0, 0, W, H);
 
-    // Batch birds by opacity band
-    const bands = [
-      { min: 0.4, max: 0.6, a: 0.45 },
-      { min: 0.6, max: 0.75, a: 0.65 },
-      { min: 0.75, max: 1.0, a: 0.85 },
-    ];
-
-    for (const band of bands) {
-      ctx.fillStyle = `rgba(15, 15, 25, ${band.a})`;
-      ctx.beginPath();
-      for (let i = 0; i < N; i++) {
-        const b = boids[i];
-        if (b.op < band.min || b.op >= band.max) continue;
-        const angle = Math.atan2(b.vy, b.vx);
-        const cos = Math.cos(angle);
-        const sin = Math.sin(angle);
-        const lx = b.sz * 2.2;
-        const ly = b.sz * 0.5;
-        ctx.moveTo(b.x + cos * lx, b.y + sin * lx);
-        ctx.lineTo(b.x - sin * ly, b.y + cos * ly);
-        ctx.lineTo(b.x - cos * lx * 0.5, b.y - sin * lx * 0.5);
-        ctx.lineTo(b.x + sin * ly, b.y - cos * ly);
-      }
-      ctx.fill();
+    // Draw each bird as a simple dot + trail — no trig, no complex paths
+    ctx.fillStyle = 'rgba(15, 15, 25, 0.7)';
+    for (let i = 0; i < N; i++) {
+      const b = boids[i];
+      const s = b.sz;
+      ctx.fillRect(b.x - s, b.y - s * 0.4, s * 2.5, s * 0.8);
     }
 
-    // Batch trails
-    ctx.strokeStyle = 'rgba(10, 10, 20, 0.12)';
-    ctx.lineWidth = 0.6;
+    // Trails in one stroke
+    ctx.strokeStyle = 'rgba(10, 10, 20, 0.15)';
+    ctx.lineWidth = 0.8;
     ctx.beginPath();
     for (let i = 0; i < N; i++) {
       const b = boids[i];
