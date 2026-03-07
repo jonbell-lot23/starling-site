@@ -1,4 +1,7 @@
-// Starling Murmuration — organic flocking with wandering attractors
+// Starling Murmuration — topological neighbor model
+// Based on Ballerini et al. (2008): each bird tracks its nearest 7
+// neighbors regardless of distance, not a fixed radius. This is what
+// real starlings do and produces ribbons/funnels instead of blobs.
 (() => {
   const canvas = document.getElementById('murmuration');
   const ctx = canvas.getContext('2d');
@@ -7,50 +10,24 @@
   const N = 800;
   const boids = [];
 
-  const VR2 = 80 * 80;
-  const SEP_D2 = 20 * 20;
-  const SEP_F = 0.06;
-  const ALN_F = 0.08;       // strong alignment = ribbons not blobs
-  const COH_F = 0.003;      // weak cohesion = don't clump into a ball
+  // Topological: each bird considers its K nearest neighbors
+  const K = 7;
+
+  const SEP_DIST = 22;
+  const SEP_F = 0.08;
+  const ALN_F = 0.12;       // strong alignment = they move as ribbons
+  const COH_F = 0.004;      // gentle cohesion = they don't ball up
   const MAX_SPD = 4.5;
-  const MIN_SPD = 2.5;
-  const EDGE_M = 60;
-  const EDGE_T = 0.5;
+  const MIN_SPD = 2;
+  const EDGE_M = 50;
+  const EDGE_T = 0.6;
 
   let mouse = { x: -1000, y: -1000, active: false };
   let t = 0;
 
-  // Wandering attractors — invisible points that drift slowly,
-  // pulling nearby birds into streams and funnels
-  const NUM_ATTRACTORS = 4;
-  const attractors = [];
-
-  function initAttractors() {
-    attractors.length = 0;
-    for (let i = 0; i < NUM_ATTRACTORS; i++) {
-      attractors.push({
-        x: W * (0.2 + Math.random() * 0.6),
-        y: H * (0.2 + Math.random() * 0.6),
-        // Each attractor drifts on its own slow sine path
-        phaseX: Math.random() * Math.PI * 2,
-        phaseY: Math.random() * Math.PI * 2,
-        speedX: 0.003 + Math.random() * 0.004,
-        speedY: 0.002 + Math.random() * 0.005,
-        ampX: W * (0.15 + Math.random() * 0.15),
-        ampY: H * (0.1 + Math.random() * 0.15),
-        cx: W * (0.2 + Math.random() * 0.6),
-        cy: H * (0.2 + Math.random() * 0.6),
-        strength: 0.015 + Math.random() * 0.01,
-      });
-    }
-  }
-
-  function updateAttractors() {
-    for (const a of attractors) {
-      a.x = a.cx + Math.sin(t * a.speedX + a.phaseX) * a.ampX;
-      a.y = a.cy + Math.cos(t * a.speedY + a.phaseY) * a.ampY;
-    }
-  }
+  // Reusable array for neighbor finding (avoid allocation per frame)
+  const neighborDists = new Float32Array(N);
+  const neighborIdx = new Uint16Array(K);
 
   function resize() {
     W = canvas.width = window.innerWidth;
@@ -60,7 +37,6 @@
   function init() {
     resize();
     boids.length = 0;
-    initAttractors();
     const cx = W * 0.5, cy = H * 0.45;
     for (let i = 0; i < N; i++) {
       const angle = (i / N) * Math.PI * 6 + Math.random() * 0.5;
@@ -72,91 +48,113 @@
         vx: -Math.sin(angle) * spd + (Math.random() - 0.5) * 0.5,
         vy: Math.cos(angle) * spd + (Math.random() - 0.5) * 0.5,
         sz: 1.25 + Math.random() * 1.5,
-        op: 0.4 + Math.random() * 0.5,
-        // Each bird is drawn to a primary attractor (creates sub-flocks)
-        att: (i % NUM_ATTRACTORS),
-        // Per-bird wander phase for organic noise
-        wPhase: Math.random() * Math.PI * 2,
+        wander: Math.random() * Math.PI * 2,
       });
     }
   }
 
+  // Find K nearest neighbors for boid i
+  // Uses partial sort — O(N) per bird which is fine for 800
+  function findNearest(i) {
+    const b = boids[i];
+    // Compute all distances
+    for (let j = 0; j < N; j++) {
+      if (j === i) { neighborDists[j] = 1e9; continue; }
+      const dx = boids[j].x - b.x;
+      const dy = boids[j].y - b.y;
+      neighborDists[j] = dx * dx + dy * dy;
+    }
+    // Find K smallest (simple selection, faster than full sort)
+    for (let k = 0; k < K; k++) {
+      let minD = 1e9, minJ = 0;
+      for (let j = 0; j < N; j++) {
+        if (neighborDists[j] < minD) {
+          minD = neighborDists[j];
+          minJ = j;
+        }
+      }
+      neighborIdx[k] = minJ;
+      neighborDists[minJ] = 1e9; // exclude from next round
+    }
+  }
+
+  // Cache neighbors — only recalculate for half the flock each frame
+  const cachedNeighbors = new Array(N);
+  for (let i = 0; i < N; i++) cachedNeighbors[i] = new Uint16Array(K);
+
   function update() {
     t++;
-    updateAttractors();
+
+    // Stagger: recalculate neighbors for half the flock each frame
+    const start = (t & 1) ? 0 : (N >> 1);
+    const end = start + (N >> 1);
+    for (let i = start; i < end; i++) {
+      findNearest(i);
+      cachedNeighbors[i].set(neighborIdx);
+    }
 
     for (let i = 0; i < N; i++) {
       const b = boids[i];
+
       let sepX = 0, sepY = 0;
       let alnX = 0, alnY = 0;
       let cohX = 0, cohY = 0;
-      let nb = 0;
 
-      for (let j = 0; j < N; j++) {
-        if (i === j) continue;
-        const o = boids[j];
+      for (let k = 0; k < K; k++) {
+        const o = boids[cachedNeighbors[i][k]];
         const dx = o.x - b.x;
         const dy = o.y - b.y;
         const d2 = dx * dx + dy * dy;
+        const d = Math.sqrt(d2) + 0.001;
 
-        if (d2 < VR2) {
-          if (d2 < SEP_D2 && d2 > 0.01) {
-            const inv = 1 / (d2 + 1);
-            sepX -= dx * inv;
-            sepY -= dy * inv;
-          }
-          alnX += o.vx;
-          alnY += o.vy;
-          cohX += o.x;
-          cohY += o.y;
-          nb++;
+        // Separation — push away from close neighbors
+        if (d < SEP_DIST) {
+          sepX -= dx / d;
+          sepY -= dy / d;
         }
+
+        // Alignment — match neighbor velocity
+        alnX += o.vx;
+        alnY += o.vy;
+
+        // Cohesion — move toward neighbor center
+        cohX += o.x;
+        cohY += o.y;
       }
 
-      if (nb > 0) {
-        const inv = 1 / nb;
-        b.vx += ((alnX * inv) - b.vx) * ALN_F;
-        b.vy += ((alnY * inv) - b.vy) * ALN_F;
-        b.vx += ((cohX * inv) - b.x) * COH_F;
-        b.vy += ((cohY * inv) - b.y) * COH_F;
-      }
-
+      const invK = 1 / K;
+      b.vx += ((alnX * invK) - b.vx) * ALN_F;
+      b.vy += ((alnY * invK) - b.vy) * ALN_F;
+      b.vx += ((cohX * invK) - b.x) * COH_F;
+      b.vy += ((cohY * invK) - b.y) * COH_F;
       b.vx += sepX * SEP_F;
       b.vy += sepY * SEP_F;
 
-      // Attractor pull — creates the funnels and streams
-      const a = attractors[b.att];
-      const adx = a.x - b.x;
-      const ady = a.y - b.y;
-      const ad2 = adx * adx + ady * ady;
-      if (ad2 > 100) {
-        const str = a.strength / (1 + ad2 * 0.00003);
-        b.vx += adx * str;
-        b.vy += ady * str;
-      }
-
-      // Per-bird wander noise — prevents lockstep
-      const wander = 0.15;
-      b.vx += Math.sin(t * 0.02 + b.wPhase) * wander;
-      b.vy += Math.cos(t * 0.017 + b.wPhase * 1.3) * wander;
+      // Gentle wander — each bird has a slowly rotating preferred direction
+      // This creates organic drift without the wobbly attractor feel
+      b.wander += (Math.random() - 0.5) * 0.3;
+      b.vx += Math.cos(b.wander) * 0.08;
+      b.vy += Math.sin(b.wander) * 0.08;
 
       // Mouse avoidance
       if (mouse.active) {
         const mdx = b.x - mouse.x;
         const mdy = b.y - mouse.y;
         const md2 = mdx * mdx + mdy * mdy;
-        if (md2 < 32400) {
-          const inv = 1.2 / (Math.sqrt(md2) + 1);
+        if (md2 < 40000) {
+          const inv = 1.5 / (Math.sqrt(md2) + 1);
           b.vx += mdx * inv;
           b.vy += mdy * inv;
         }
       }
 
+      // Soft edge wrapping
       if (b.x < EDGE_M) b.vx += EDGE_T;
       if (b.x > W - EDGE_M) b.vx -= EDGE_T;
       if (b.y < EDGE_M) b.vy += EDGE_T;
       if (b.y > H - EDGE_M) b.vy -= EDGE_T;
 
+      // Speed clamp
       const s2 = b.vx * b.vx + b.vy * b.vy;
       if (s2 > 0.001) {
         if (s2 > MAX_SPD * MAX_SPD) {
