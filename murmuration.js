@@ -56,7 +56,7 @@
         y: cy + Math.sin(angle) * r,
         vx: -Math.sin(angle) * spd + (Math.random() - 0.5) * 0.3,
         vy: Math.cos(angle) * spd + (Math.random() - 0.5) * 0.3,
-        sz: 0.8 + Math.random() * 1,
+        sz: 1.1 + Math.random() * 1.4,
         wander: Math.random() * Math.PI * 2,
         // Lost bird system: timer counts down, when 0 bird goes lost
         // Stagger so they don't all get lost at once
