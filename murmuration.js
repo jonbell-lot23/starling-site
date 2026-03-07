@@ -7,22 +7,19 @@
   const N = 500;
   const boids = [];
 
-  const VR = 120;            // large visual range — they see the group
+  const VR = 100;
   const VR2 = VR * VR;
-  const SEP_DIST = 12;
-  const SEP_F = 0.03;
-  const ALN_F = 0.1;         // strong alignment — move together
-  const COH_F = 0.01;        // strong cohesion — stay together
+  const SEP_DIST = 16;
+  const SEP_F = 0.04;
+  const ALN_F = 0.15;        // very strong — they fly in the same direction
+  const COH_F = 0.005;       // gentle — they stay near but don't collapse
   const MAX_SPD = 3.5;
-  const MIN_SPD = 1.5;
-  const EDGE_M = 60;
+  const MIN_SPD = 2;
+  const EDGE_M = 80;
   const EDGE_T = 0.5;
 
   let mouse = { x: -1000, y: -1000, active: false };
-
-  // Global center pull — always gently pull toward screen center
-  // This keeps the swarm visible and prevents dispersal
-  const CENTER_F = 0.0003;
+  let t = 0;
 
   function resize() {
     W = canvas.width = window.innerWidth;
@@ -49,7 +46,7 @@
   }
 
   function update() {
-    const gcx = W * 0.5, gcy = H * 0.45;
+    t++;
 
     for (let i = 0; i < N; i++) {
       const b = boids[i];
@@ -90,14 +87,16 @@
       b.vx += sepX * SEP_F;
       b.vy += sepY * SEP_F;
 
-      // Global center pull — keeps the swarm from drifting off screen
-      b.vx += (gcx - b.x) * CENTER_F;
-      b.vy += (gcy - b.y) * CENTER_F;
+      // Slow rotating wind — gives the flock sweeping direction changes
+      // instead of collapsing to a center point
+      const windAngle = t * 0.003;
+      b.vx += Math.cos(windAngle) * 0.04;
+      b.vy += Math.sin(windAngle) * 0.04;
 
-      // Gentle wander
-      b.wander += (Math.random() - 0.5) * 0.15;
-      b.vx += Math.cos(b.wander) * 0.03;
-      b.vy += Math.sin(b.wander) * 0.03;
+      // Tiny individual wander
+      b.wander += (Math.random() - 0.5) * 0.1;
+      b.vx += Math.cos(b.wander) * 0.02;
+      b.vy += Math.sin(b.wander) * 0.02;
 
       // Mouse avoidance
       if (mouse.active) {
