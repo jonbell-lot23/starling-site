@@ -11,10 +11,10 @@
   const VR2 = VR * VR;
   const SEP_DIST = 16;
   const SEP_F = 0.04;
-  const ALN_F = 0.15;        // very strong — they fly in the same direction
-  const COH_F = 0.005;       // gentle — they stay near but don't collapse
+  const ALN_F = 0.06;        // moderate — they generally move together
+  const COH_F = 0.003;       // light — drift together, don't clump
   const MAX_SPD = 3.5;
-  const MIN_SPD = 2;
+  const MIN_SPD = 1.8;
   const EDGE_M = 80;
   const EDGE_T = 0.5;
 
@@ -87,16 +87,16 @@
       b.vx += sepX * SEP_F;
       b.vy += sepY * SEP_F;
 
-      // Slow rotating wind — gives the flock sweeping direction changes
-      // instead of collapsing to a center point
-      const windAngle = t * 0.003;
-      b.vx += Math.cos(windAngle) * 0.04;
-      b.vy += Math.sin(windAngle) * 0.04;
+      // Rotating wind that pulses — swirl then gather, swirl then gather
+      const windAngle = t * 0.004;
+      const windStrength = 0.02 + Math.sin(t * 0.008) * 0.03;
+      b.vx += Math.cos(windAngle) * windStrength;
+      b.vy += Math.sin(windAngle) * windStrength;
 
-      // Tiny individual wander
-      b.wander += (Math.random() - 0.5) * 0.1;
-      b.vx += Math.cos(b.wander) * 0.02;
-      b.vy += Math.sin(b.wander) * 0.02;
+      // Individual wander — enough to be swirly
+      b.wander += (Math.random() - 0.5) * 0.25;
+      b.vx += Math.cos(b.wander) * 0.05;
+      b.vy += Math.sin(b.wander) * 0.05;
 
       // Mouse avoidance
       if (mouse.active) {
