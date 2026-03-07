@@ -4,7 +4,7 @@
   const ctx = canvas.getContext('2d');
 
   let W, H;
-  const NUM_BOIDS = 500;
+  const NUM_BOIDS = 3500;
   const boids = [];
 
   // Flocking parameters — tighter, more cohesive
@@ -42,7 +42,7 @@
 
     return {
       x, y, vx, vy,
-      size: 1.5 + Math.random() * 1.5,
+      size: 1 + Math.random() * 1.2,
       opacity: 0.4 + Math.random() * 0.5,
     };
   }
@@ -74,7 +74,40 @@
     if (b.y > H - EDGE_MARGIN) b.vy -= EDGE_TURN;
   }
 
+  // Spatial grid for O(n) neighbor lookups
+  const CELL_SIZE = VISUAL_RANGE;
+  let grid = {};
+
+  function buildGrid() {
+    grid = {};
+    for (let i = 0; i < boids.length; i++) {
+      const b = boids[i];
+      const cx = Math.floor(b.x / CELL_SIZE);
+      const cy = Math.floor(b.y / CELL_SIZE);
+      const key = cx + ',' + cy;
+      if (!grid[key]) grid[key] = [];
+      grid[key].push(i);
+    }
+  }
+
+  function getNearbyCells(b) {
+    const cx = Math.floor(b.x / CELL_SIZE);
+    const cy = Math.floor(b.y / CELL_SIZE);
+    const nearby = [];
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dy = -1; dy <= 1; dy++) {
+        const key = (cx + dx) + ',' + (cy + dy);
+        if (grid[key]) {
+          for (const idx of grid[key]) nearby.push(idx);
+        }
+      }
+    }
+    return nearby;
+  }
+
   function update() {
+    buildGrid();
+
     for (let i = 0; i < boids.length; i++) {
       const b = boids[i];
       let sepX = 0, sepY = 0;
@@ -82,7 +115,8 @@
       let cohX = 0, cohY = 0;
       let neighbors = 0;
 
-      for (let j = 0; j < boids.length; j++) {
+      const nearby = getNearbyCells(b);
+      for (const j of nearby) {
         if (i === j) continue;
         const other = boids[j];
         const dx = other.x - b.x;
