@@ -74,8 +74,7 @@ body {
   width: 48px;
   height: 48px;
   z-index: 3;
-  filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.15));
-  animation: bird-float 4s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.1));
 }
 
 @keyframes bird-float {
@@ -94,13 +93,15 @@ body {
 }
 
 .hero-subtitle {
-  font-size: clamp(1.05rem, 2.5vw, 1.4rem);
+  font-size: 13px;
   color: #4a9eff;
-  font-weight: 300;
+  font-weight: 500;
   max-width: 500px;
   margin: 0 auto;
-  margin-top: 12px;
-  letter-spacing: -0.01em;
+  margin-top: 32px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-family: 'Inter', -apple-system, sans-serif;
 }
 
 .scroll-hint {
