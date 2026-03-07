@@ -6,16 +6,16 @@
 }
 
 :root {
-  --bg-dark: #0a0a0a;
-  --bg-section: #111113;
-  --bg-card: #161618;
-  --bg-card-hover: #1c1c1f;
-  --text-primary: #f0f0f2;
-  --text-secondary: #a0a0a8;
-  --text-muted: #6b6b75;
-  --accent: #e0e0e5;
-  --border: #222225;
-  --border-subtle: #1a1a1d;
+  --bg-dark: #f4c87a;
+  --bg-section: #e8b86a;
+  --bg-card: rgba(0, 0, 0, 0.08);
+  --bg-card-hover: rgba(0, 0, 0, 0.12);
+  --text-primary: #1a1a2e;
+  --text-secondary: #3a3040;
+  --text-muted: #6b5a50;
+  --accent: #1a1a2e;
+  --border: rgba(0, 0, 0, 0.1);
+  --border-subtle: rgba(0, 0, 0, 0.06);
   --max-width: 900px;
   --glow: rgba(255, 255, 255, 0.03);
 }
@@ -46,11 +46,8 @@ body {
   background: linear-gradient(
     180deg,
     #1a1a2e 0%,
-    #16213e 20%,
-    #1b3a5c 40%,
-    #4a3060 60%,
-    #c0605a 78%,
-    #e8956a 90%,
+    #16213e 15%,
+    #e8956a 50%,
     #f4c87a 100%
   );
   overflow: hidden;
@@ -315,7 +312,7 @@ section {
 .cta-section {
   text-align: center;
   padding: 160px 24px;
-  background: linear-gradient(180deg, var(--bg-dark) 0%, #0d0d10 50%, var(--bg-dark) 100%);
+  background: linear-gradient(180deg, var(--bg-dark) 0%, #e8a85a 50%, var(--bg-dark) 100%);
 }
 
 .cta-button {
@@ -323,8 +320,8 @@ section {
   align-items: center;
   gap: 10px;
   padding: 16px 36px;
-  background: #fff;
-  color: #000;
+  background: #1a1a2e;
+  color: #f4c87a;
   font-size: 15px;
   font-weight: 500;
   text-decoration: none;
@@ -334,7 +331,7 @@ section {
 }
 
 .cta-button:hover {
-  background: #e8e8ec;
+  background: #16213e;
   transform: translateY(-2px);
   box-shadow: 0 8px 32px rgba(255, 255, 255, 0.08);
 }
@@ -466,6 +463,6 @@ footer a:hover {
 
 /* === Selection === */
 ::selection {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
+  background: rgba(26, 26, 46, 0.2);
+  color: #1a1a2e;
 }
