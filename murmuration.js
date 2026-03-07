@@ -40,8 +40,8 @@
     const cx = W * 0.5, cy = H * 0.45;
     for (let i = 0; i < N; i++) {
       const angle = (i / N) * Math.PI * 6 + Math.random() * 0.5;
-      const r = 30 + Math.random() * 120;
-      const spd = 2.5 + Math.random() * 2;
+      const r = 10 + Math.random() * 50;
+      const spd = 1.5 + Math.random() * 1;
       boids.push({
         x: cx + Math.cos(angle) * r,
         y: cy + Math.sin(angle) * r,
