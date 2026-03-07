@@ -4,7 +4,7 @@
   const ctx = canvas.getContext('2d');
 
   let W, H;
-  const N = 400;
+  const N = 800;
   const boids = [];
 
   const VR2 = 90 * 90;
@@ -37,7 +37,7 @@
         y: cy + Math.sin(angle) * r,
         vx: -Math.sin(angle) * spd + (Math.random() - 0.5) * 0.5,
         vy: Math.cos(angle) * spd + (Math.random() - 0.5) * 0.5,
-        sz: 1 + Math.random() * 1.2,
+        sz: 1.25 + Math.random() * 1.5,
         op: 0.4 + Math.random() * 0.5,
       });
     }
