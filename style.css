@@ -68,9 +68,12 @@ body {
 }
 
 .bird-logo {
-  width: 72px;
-  height: 72px;
-  margin-bottom: 28px;
+  position: absolute;
+  top: 32px;
+  left: 32px;
+  width: 48px;
+  height: 48px;
+  z-index: 3;
   filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.15));
   animation: bird-float 4s ease-in-out infinite;
 }
@@ -92,11 +95,11 @@ body {
 
 .hero-subtitle {
   font-size: clamp(1.05rem, 2.5vw, 1.4rem);
-  color: var(--text-secondary);
+  color: #4a9eff;
   font-weight: 300;
   max-width: 500px;
   margin: 0 auto;
-  opacity: 0.85;
+  margin-top: 12px;
   letter-spacing: -0.01em;
 }
 
@@ -428,9 +431,10 @@ footer a:hover {
   }
 
   .bird-logo {
-    width: 56px;
-    height: 56px;
-    margin-bottom: 20px;
+    width: 36px;
+    height: 36px;
+    top: 20px;
+    left: 20px;
   }
 
   .screenshot-placeholder {
