@@ -180,6 +180,10 @@ section {
   line-height: 1.6;
 }
 
+.section-body--half {
+  max-width: 50%;
+}
+
 .section-body em {
   color: var(--text-primary);
   font-style: italic;
@@ -383,6 +387,10 @@ footer a:hover {
 
 /* === Responsive === */
 @media (max-width: 768px) {
+  .section-body--half {
+    max-width: 100%;
+  }
+
   .steps-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
