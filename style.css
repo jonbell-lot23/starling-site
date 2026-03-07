@@ -38,8 +38,8 @@ body {
 /* === Hero === */
 .hero {
   position: relative;
-  height: 140vh;
-  min-height: 800px;
+  height: 100vh;
+  min-height: 600px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -145,7 +145,7 @@ body {
 
 /* === Sections === */
 section {
-  padding: 140px 24px;
+  padding: 80px 24px;
 }
 
 .section-inner {
