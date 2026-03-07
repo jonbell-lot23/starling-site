@@ -4,7 +4,7 @@
   const ctx = canvas.getContext('2d');
 
   let W, H;
-  const N = 600;
+  const N = 300;
   const boids = [];
 
   const VR = 90, VR2 = VR * VR;
