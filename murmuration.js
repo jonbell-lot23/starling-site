@@ -4,19 +4,19 @@
   const ctx = canvas.getContext('2d');
 
   let W, H;
-  const NUM_BOIDS = 300;
+  const NUM_BOIDS = 500;
   const boids = [];
 
-  // Flocking parameters
-  const VISUAL_RANGE = 75;
-  const SEPARATION_DIST = 25;
+  // Flocking parameters — tighter, more cohesive
+  const VISUAL_RANGE = 90;
+  const SEPARATION_DIST = 18;
   const SEPARATION_FACTOR = 0.05;
-  const ALIGNMENT_FACTOR = 0.045;
-  const COHESION_FACTOR = 0.005;
-  const MAX_SPEED = 3.5;
-  const MIN_SPEED = 1.5;
-  const EDGE_MARGIN = 100;
-  const EDGE_TURN = 0.3;
+  const ALIGNMENT_FACTOR = 0.065;
+  const COHESION_FACTOR = 0.008;
+  const MAX_SPEED = 4;
+  const MIN_SPEED = 2;
+  const EDGE_MARGIN = 80;
+  const EDGE_TURN = 0.4;
 
   // Mouse interaction
   let mouse = { x: -1000, y: -1000, active: false };
@@ -26,14 +26,24 @@
     H = canvas.height = window.innerHeight;
   }
 
-  function createBoid() {
+  // Start in a tight swirling cyclone around center
+  function createBoid(i) {
+    const cx = W * 0.5;
+    const cy = H * 0.45;
+    const angle = (i / NUM_BOIDS) * Math.PI * 6 + Math.random() * 0.5;
+    const radius = 30 + Math.random() * 120;
+    const x = cx + Math.cos(angle) * radius;
+    const y = cy + Math.sin(angle) * radius;
+
+    // Tangential velocity — creates the swirl
+    const speed = 2.5 + Math.random() * 2;
+    const vx = -Math.sin(angle) * speed + (Math.random() - 0.5) * 0.5;
+    const vy = Math.cos(angle) * speed + (Math.random() - 0.5) * 0.5;
+
     return {
-      x: Math.random() * W,
-      y: Math.random() * H,
-      vx: (Math.random() - 0.5) * 4,
-      vy: (Math.random() - 0.5) * 4,
-      size: 1.2 + Math.random() * 1.3,
-      opacity: 0.3 + Math.random() * 0.5,
+      x, y, vx, vy,
+      size: 1.5 + Math.random() * 1.5,
+      opacity: 0.4 + Math.random() * 0.5,
     };
   }
 
@@ -41,7 +51,7 @@
     resize();
     boids.length = 0;
     for (let i = 0; i < NUM_BOIDS; i++) {
-      boids.push(createBoid());
+      boids.push(createBoid(i));
     }
   }
 
@@ -80,39 +90,30 @@
         const dist = Math.sqrt(dx * dx + dy * dy);
 
         if (dist < VISUAL_RANGE) {
-          // Separation
           if (dist < SEPARATION_DIST && dist > 0) {
             sepX -= dx / dist;
             sepY -= dy / dist;
           }
-
-          // Alignment
           alignX += other.vx;
           alignY += other.vy;
-
-          // Cohesion
           cohX += other.x;
           cohY += other.y;
-
           neighbors++;
         }
       }
 
       if (neighbors > 0) {
-        // Alignment — steer toward average heading
         alignX /= neighbors;
         alignY /= neighbors;
         b.vx += (alignX - b.vx) * ALIGNMENT_FACTOR;
         b.vy += (alignY - b.vy) * ALIGNMENT_FACTOR;
 
-        // Cohesion — steer toward center of mass
         cohX /= neighbors;
         cohY /= neighbors;
         b.vx += (cohX - b.x) * COHESION_FACTOR;
         b.vy += (cohY - b.y) * COHESION_FACTOR;
       }
 
-      // Separation
       b.vx += sepX * SEPARATION_FACTOR;
       b.vy += sepY * SEPARATION_FACTOR;
 
@@ -121,9 +122,9 @@
         const mdx = b.x - mouse.x;
         const mdy = b.y - mouse.y;
         const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
-        if (mdist < 150) {
-          b.vx += (mdx / mdist) * 0.8;
-          b.vy += (mdy / mdist) * 0.8;
+        if (mdist < 180) {
+          b.vx += (mdx / mdist) * 1.2;
+          b.vy += (mdy / mdist) * 1.2;
         }
       }
 
@@ -141,19 +142,27 @@
     for (const b of boids) {
       const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
       const alpha = b.opacity * (0.6 + (speed / MAX_SPEED) * 0.4);
+      const angle = Math.atan2(b.vy, b.vx);
+
+      // Draw as small elongated shapes — more bird-like
+      ctx.save();
+      ctx.translate(b.x, b.y);
+      ctx.rotate(angle);
 
       ctx.beginPath();
-      ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, b.size * 2, b.size * 0.6, 0, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(15, 15, 25, ${alpha})`;
       ctx.fill();
 
-      // Subtle trail
+      // Trail
       ctx.beginPath();
-      ctx.moveTo(b.x, b.y);
-      ctx.lineTo(b.x - b.vx * 2, b.y - b.vy * 2);
-      ctx.strokeStyle = `rgba(10, 10, 20, ${alpha * 0.3})`;
-      ctx.lineWidth = b.size * 0.6;
+      ctx.moveTo(0, 0);
+      ctx.lineTo(-b.size * 3, 0);
+      ctx.strokeStyle = `rgba(10, 10, 20, ${alpha * 0.2})`;
+      ctx.lineWidth = b.size * 0.4;
       ctx.stroke();
+
+      ctx.restore();
     }
   }
 
