@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Starling — What if you could see what good looks like?</title>
+  <title>Starling — Understand what good looks like, faster</title>
   <meta name="description" content="Starling is a design orchestrator that explores what good could look like. Point it at a screen, walk away, come back to a full design exploration.">
   <meta property="og:title" content="Starling — Design Orchestrator">
-  <meta property="og:description" content="What if you could see what good looks like?">
+  <meta property="og:description" content="Understand what good looks like — faster.">
   <meta property="og:type" content="website">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,8 +19,13 @@
   <section class="hero">
     <canvas id="murmuration"></canvas>
     <div class="hero-content">
+      <svg class="bird-logo" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Minimal geometric starling in flight -->
+        <path d="M40 8 L58 30 L72 28 L52 42 L56 72 L40 54 L24 72 L28 42 L8 28 L22 30 Z" fill="white" opacity="0.9"/>
+        <circle cx="34" cy="28" r="2" fill="#0a0a0a"/>
+      </svg>
       <h1 class="hero-title">Starling</h1>
-      <p class="hero-subtitle">What if you could see what good looks like?</p>
+      <p class="hero-subtitle">Understand what good looks like — faster</p>
     </div>
     <div class="scroll-hint">
       <span>Scroll</span>
@@ -35,10 +40,22 @@
     <div class="section-inner fade-in">
       <p class="section-label">The Problem</p>
       <h2 class="section-heading">Designers have been asked to dream small.</h2>
-      <div class="section-body">
-        <p>You have a page on the corporate app you are working on. You know it isn't great. You have data showing people don't like it. And now people are looking at you, the designer: <em>We know the page isn't good. Can you help us understand what good looks like?</em></p>
-        <p>For a long time, designers have been in a defensive crouch. Beat down by traditional software development, they know that any adjustments they want to make will probably take 18 months. So they shoot lower. Aim smaller. Just to preempt being told their ideas are too expensive.</p>
-        <p>The problem with that is you end up with watered-down, me-too pages that barely keep pace with competitors — if that. And as the years go on, the software feels more and more creaky and rickety, and it becomes harder to explain why anyone should try your product.</p>
+      <div class="section-body section-body--tight">
+        <p>You know your product can be better. Your users know it too.</p>
+        <p>But exploring alternatives takes months and costs a fortune — so you ship safe, incremental, forgettable work.</p>
+        <p>The gap between what you ship and what you <em>could</em> ship keeps growing.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screenshot placeholder: Before/After -->
+  <section class="screenshot-section">
+    <div class="section-inner fade-in">
+      <div class="screenshot-placeholder">
+        <div class="screenshot-placeholder-inner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 16l5-5 4 4 4-6 5 7"/></svg>
+          <span>Product screenshot coming soon</span>
+        </div>
       </div>
     </div>
   </section>
@@ -50,47 +67,61 @@
         <p class="section-label">How It Works</p>
         <h2 class="section-heading">Six steps from stale to stellar.</h2>
       </div>
-      <div class="steps fade-in fade-in-stagger">
-        <div class="step">
+      <div class="steps-grid fade-in fade-in-stagger">
+        <div class="step-card">
           <div class="step-number">01</div>
-          <div>
-            <div class="step-title">Baseline report</div>
-            <div class="step-desc">Starling analyzes the current screen and tells you why it's having trouble.</div>
-          </div>
+          <div class="step-title">Baseline report</div>
+          <div class="step-desc">Starling analyzes the current screen and tells you why it's struggling.</div>
         </div>
-        <div class="step">
+        <div class="step-card">
           <div class="step-number">02</div>
-          <div>
-            <div class="step-title">Divergent exploration</div>
-            <div class="step-desc">Generate five distinct directions, three screens each, working within your design system.</div>
-          </div>
+          <div class="step-title">Divergent exploration</div>
+          <div class="step-desc">Five distinct directions. Three screens each. All within your design system.</div>
         </div>
-        <div class="step">
+        <div class="step-card">
           <div class="step-number">03</div>
-          <div>
-            <div class="step-title">Feedback</div>
-            <div class="step-desc">Synthetic users weigh in with scores and specific quotes.</div>
-          </div>
+          <div class="step-title">Synthetic feedback</div>
+          <div class="step-desc">AI users score each direction with specific, actionable quotes.</div>
         </div>
-        <div class="step">
+        <div class="step-card">
           <div class="step-number">04</div>
-          <div>
-            <div class="step-title">Feel it move</div>
-            <div class="step-desc">Click into each variation and feel how it moves.</div>
-          </div>
+          <div class="step-title">Feel it move</div>
+          <div class="step-desc">Click into each variation. Experience the interactions firsthand.</div>
         </div>
-        <div class="step">
+        <div class="step-card">
           <div class="step-number">05</div>
-          <div>
-            <div class="step-title">Combine and iterate</div>
-            <div class="step-desc">Explicitly combine the best elements and do the next round.</div>
+          <div class="step-title">Combine &amp; iterate</div>
+          <div class="step-desc">Cherry-pick the best elements. Remix. Run the next round.</div>
+        </div>
+        <div class="step-card">
+          <div class="step-number">06</div>
+          <div class="step-title">Converge</div>
+          <div class="step-desc">Five becomes three, becomes two, becomes one. The best design wins.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screenshot placeholder: Exploration Grid -->
+  <section class="screenshot-section section-alt">
+    <div class="section-inner fade-in">
+      <div class="screenshot-row">
+        <div class="screenshot-placeholder screenshot-placeholder--small">
+          <div class="screenshot-placeholder-inner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 16l5-5 4 4 4-6 5 7"/></svg>
+            <span>Exploration view</span>
           </div>
         </div>
-        <div class="step">
-          <div class="step-number">06</div>
-          <div>
-            <div class="step-title">Converge</div>
-            <div class="step-desc">Five directions become three, become two, become one. Weak directions culled, strong ones refined.</div>
+        <div class="screenshot-placeholder screenshot-placeholder--small">
+          <div class="screenshot-placeholder-inner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 16l5-5 4 4 4-6 5 7"/></svg>
+            <span>Feedback scores</span>
+          </div>
+        </div>
+        <div class="screenshot-placeholder screenshot-placeholder--small">
+          <div class="screenshot-placeholder-inner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 16l5-5 4 4 4-6 5 7"/></svg>
+            <span>Convergence</span>
           </div>
         </div>
       </div>
@@ -98,14 +129,13 @@
   </section>
 
   <!-- Why This Matters -->
-  <section class="section-alt">
+  <section>
     <div class="section-inner fade-in">
       <p class="section-label">Why This Matters</p>
       <h2 class="section-heading">The cost of exploration just dropped to nearly zero.</h2>
-      <div class="section-body">
-        <p>Designers have been asked to dream small for too long. Not because they lack vision, but because the cost of exploring alternatives has been prohibitively high. What if that cost dropped to nearly zero?</p>
-        <p>That is Starling. Point it at a screen. Walk away. Come back to a full exploration of what good could look like.</p>
-        <p>It won't replace taste. It won't replace the designer. But it will give you something designers have almost never had: proof that better is possible, and a map of how to get there.</p>
+      <div class="section-body section-body--tight">
+        <p>Point Starling at a screen. Walk away. Come back to a full exploration of what good could look like.</p>
+        <p>It won't replace taste. But it will give you something designers have never had: <em>proof that better is possible.</em></p>
       </div>
     </div>
   </section>
