@@ -6,8 +6,8 @@
 }
 
 :root {
-  --bg-dark: #f4c87a;
-  --bg-section: #e8b86a;
+  --bg-dark: #e8c07a;
+  --bg-section: #e8c07a;
   --bg-card: rgba(0, 0, 0, 0.08);
   --bg-card-hover: rgba(0, 0, 0, 0.12);
   --text-primary: #1a1a2e;
@@ -38,17 +38,18 @@ body {
 /* === Hero === */
 .hero {
   position: relative;
-  height: 100vh;
-  min-height: 600px;
+  height: 140vh;
+  min-height: 800px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(
     180deg,
     #1a1a2e 0%,
-    #16213e 15%,
-    #e8956a 50%,
-    #f4c87a 100%
+    #16213e 10%,
+    #c08050 40%,
+    #e8c07a 70%,
+    #e8c07a 100%
   );
   overflow: hidden;
 }
@@ -312,7 +313,7 @@ section {
 .cta-section {
   text-align: center;
   padding: 160px 24px;
-  background: linear-gradient(180deg, var(--bg-dark) 0%, #e8a85a 50%, var(--bg-dark) 100%);
+  background: var(--bg-dark);
 }
 
 .cta-button {
