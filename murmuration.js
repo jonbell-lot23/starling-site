@@ -1,215 +1,157 @@
-// Starling Murmuration — demoscene-optimized flocking
+// Starling Murmuration — Canvas flocking simulation
 (() => {
   const canvas = document.getElementById('murmuration');
   const ctx = canvas.getContext('2d');
 
   let W, H;
-  const N = 875;
+  const N = 600;
+  const boids = [];
 
-  // SoA layout — cache-friendly typed arrays
-  const px = new Float32Array(N);
-  const py = new Float32Array(N);
-  const vx = new Float32Array(N);
-  const vy = new Float32Array(N);
-  const sz = new Float32Array(N);
-  const op = new Float32Array(N);
-
-  // Flocking
   const VR = 90, VR2 = VR * VR;
   const SEP_D2 = 18 * 18;
   const SEP_F = 0.05;
   const ALN_F = 0.065;
   const COH_F = 0.008;
-  const MAX_SPD = 4, MAX_SPD2 = 16;
-  const MIN_SPD = 2, MIN_SPD2 = 4;
-  const EDGE_M = 80, EDGE_T = 0.4;
+  const MAX_SPD = 4;
+  const MIN_SPD = 2;
+  const EDGE_M = 80;
+  const EDGE_T = 0.4;
 
   let mouse = { x: -1000, y: -1000, active: false };
-  let frame = 0;
-
-  // Spatial grid
-  const CELL = VR;
-  let gridKeys, gridNext, gridHead, gridCols;
-
-  function allocGrid() {
-    gridCols = Math.ceil(W / CELL) + 2;
-    const cells = gridCols * (Math.ceil(H / CELL) + 2);
-    gridHead = new Int32Array(cells).fill(-1);
-    gridKeys = new Int32Array(N);
-    gridNext = new Int32Array(N);
-  }
-
-  function buildGrid() {
-    gridHead.fill(-1);
-    for (let i = 0; i < N; i++) {
-      const cx = (px[i] / CELL) | 0;
-      const cy = (py[i] / CELL) | 0;
-      const key = cy * gridCols + cx;
-      gridKeys[i] = key;
-      gridNext[i] = gridHead[key];
-      gridHead[key] = i;
-    }
-  }
 
   function resize() {
     W = canvas.width = window.innerWidth;
     H = canvas.height = window.innerHeight;
-    allocGrid();
   }
 
   function init() {
     resize();
-    const cxp = W * 0.5, cyp = H * 0.45;
+    boids.length = 0;
+    const cx = W * 0.5, cy = H * 0.45;
     for (let i = 0; i < N; i++) {
       const angle = (i / N) * Math.PI * 6 + Math.random() * 0.5;
       const r = 30 + Math.random() * 120;
-      px[i] = cxp + Math.cos(angle) * r;
-      py[i] = cyp + Math.sin(angle) * r;
       const spd = 2.5 + Math.random() * 2;
-      vx[i] = -Math.sin(angle) * spd + (Math.random() - 0.5) * 0.5;
-      vy[i] = Math.cos(angle) * spd + (Math.random() - 0.5) * 0.5;
-      sz[i] = 1 + Math.random() * 1.2;
-      op[i] = 0.4 + Math.random() * 0.5;
+      boids.push({
+        x: cx + Math.cos(angle) * r,
+        y: cy + Math.sin(angle) * r,
+        vx: -Math.sin(angle) * spd + (Math.random() - 0.5) * 0.5,
+        vy: Math.cos(angle) * spd + (Math.random() - 0.5) * 0.5,
+        sz: 1 + Math.random() * 1.2,
+        op: 0.4 + Math.random() * 0.5,
+      });
     }
   }
 
   function update() {
-    buildGrid();
-
-    // Staggered: update half the flock each frame
-    const start = (frame & 1) ? 0 : (N >> 1);
-    const end = start + (N >> 1);
-
-    for (let i = start; i < end; i++) {
+    for (let i = 0; i < N; i++) {
+      const b = boids[i];
       let sepX = 0, sepY = 0;
       let alnX = 0, alnY = 0;
       let cohX = 0, cohY = 0;
       let nb = 0;
 
-      const cx = (px[i] / CELL) | 0;
-      const cy = (py[i] / CELL) | 0;
+      for (let j = 0; j < N; j++) {
+        if (i === j) continue;
+        const o = boids[j];
+        const dx = o.x - b.x;
+        const dy = o.y - b.y;
+        const d2 = dx * dx + dy * dy;
 
-      for (let dy = -1; dy <= 1; dy++) {
-        for (let dx = -1; dx <= 1; dx++) {
-          const key = (cy + dy) * gridCols + (cx + dx);
-          let j = gridHead[key];
-          while (j !== -1) {
-            if (j !== i) {
-              const ddx = px[j] - px[i];
-              const ddy = py[j] - py[i];
-              const d2 = ddx * ddx + ddy * ddy;
-
-              if (d2 < VR2) {
-                if (d2 < SEP_D2 && d2 > 0.01) {
-                  // Fast inverse sqrt approximation (no sqrt!)
-                  const inv = 1 / (d2 + 1);
-                  sepX -= ddx * inv;
-                  sepY -= ddy * inv;
-                }
-                alnX += vx[j];
-                alnY += vy[j];
-                cohX += px[j];
-                cohY += py[j];
-                nb++;
-              }
-            }
-            j = gridNext[j];
+        if (d2 < VR2) {
+          if (d2 < SEP_D2 && d2 > 0.01) {
+            const inv = 1 / (d2 + 1);
+            sepX -= dx * inv;
+            sepY -= dy * inv;
           }
+          alnX += o.vx;
+          alnY += o.vy;
+          cohX += o.x;
+          cohY += o.y;
+          nb++;
         }
       }
 
       if (nb > 0) {
-        const invN = 1 / nb;
-        vx[i] += ((alnX * invN) - vx[i]) * ALN_F;
-        vy[i] += ((alnY * invN) - vy[i]) * ALN_F;
-        vx[i] += ((cohX * invN) - px[i]) * COH_F;
-        vy[i] += ((cohY * invN) - py[i]) * COH_F;
+        const inv = 1 / nb;
+        b.vx += ((alnX * inv) - b.vx) * ALN_F;
+        b.vy += ((alnY * inv) - b.vy) * ALN_F;
+        b.vx += ((cohX * inv) - b.x) * COH_F;
+        b.vy += ((cohY * inv) - b.y) * COH_F;
       }
 
-      vx[i] += sepX * SEP_F;
-      vy[i] += sepY * SEP_F;
+      b.vx += sepX * SEP_F;
+      b.vy += sepY * SEP_F;
 
-      // Mouse avoidance
       if (mouse.active) {
-        const mdx = px[i] - mouse.x;
-        const mdy = py[i] - mouse.y;
+        const mdx = b.x - mouse.x;
+        const mdy = b.y - mouse.y;
         const md2 = mdx * mdx + mdy * mdy;
-        if (md2 < 32400) { // 180²
+        if (md2 < 32400) {
           const inv = 1.2 / (Math.sqrt(md2) + 1);
-          vx[i] += mdx * inv;
-          vy[i] += mdy * inv;
+          b.vx += mdx * inv;
+          b.vy += mdy * inv;
         }
       }
 
-      // Bounds
-      if (px[i] < EDGE_M) vx[i] += EDGE_T;
-      if (px[i] > W - EDGE_M) vx[i] -= EDGE_T;
-      if (py[i] < EDGE_M) vy[i] += EDGE_T;
-      if (py[i] > H - EDGE_M) vy[i] -= EDGE_T;
+      if (b.x < EDGE_M) b.vx += EDGE_T;
+      if (b.x > W - EDGE_M) b.vx -= EDGE_T;
+      if (b.y < EDGE_M) b.vy += EDGE_T;
+      if (b.y > H - EDGE_M) b.vy -= EDGE_T;
 
-      // Speed clamp (no sqrt for common case)
-      const s2 = vx[i] * vx[i] + vy[i] * vy[i];
-      if (s2 > MAX_SPD2) {
+      const s2 = b.vx * b.vx + b.vy * b.vy;
+      if (s2 > 16) {
         const s = Math.sqrt(s2);
-        vx[i] = (vx[i] / s) * MAX_SPD;
-        vy[i] = (vy[i] / s) * MAX_SPD;
-      } else if (s2 < MIN_SPD2) {
+        b.vx = (b.vx / s) * MAX_SPD;
+        b.vy = (b.vy / s) * MAX_SPD;
+      } else if (s2 < 4) {
         const s = Math.sqrt(s2);
-        vx[i] = (vx[i] / s) * MIN_SPD;
-        vy[i] = (vy[i] / s) * MIN_SPD;
+        b.vx = (b.vx / s) * MIN_SPD;
+        b.vy = (b.vy / s) * MIN_SPD;
       }
-    }
 
-    // Move ALL boids every frame (positions always update)
-    for (let i = 0; i < N; i++) {
-      px[i] += vx[i];
-      py[i] += vy[i];
+      b.x += b.vx;
+      b.y += b.vy;
     }
-
-    frame++;
   }
 
   function draw() {
     ctx.clearRect(0, 0, W, H);
 
-    // Batch all birds in one path per alpha band
-    // 3 bands for depth variation
+    // Batch birds by opacity band
     const bands = [
-      { minOp: 0.4, maxOp: 0.6, alpha: 0.45 },
-      { minOp: 0.6, maxOp: 0.75, alpha: 0.65 },
-      { minOp: 0.75, maxOp: 1.0, alpha: 0.85 },
+      { min: 0.4, max: 0.6, a: 0.45 },
+      { min: 0.6, max: 0.75, a: 0.65 },
+      { min: 0.75, max: 1.0, a: 0.85 },
     ];
 
     for (const band of bands) {
-      ctx.fillStyle = `rgba(15, 15, 25, ${band.alpha})`;
+      ctx.fillStyle = `rgba(15, 15, 25, ${band.a})`;
       ctx.beginPath();
-
       for (let i = 0; i < N; i++) {
-        if (op[i] < band.minOp || op[i] >= band.maxOp) continue;
-        const angle = Math.atan2(vy[i], vx[i]);
-        const s = sz[i];
+        const b = boids[i];
+        if (b.op < band.min || b.op >= band.max) continue;
+        const angle = Math.atan2(b.vy, b.vx);
         const cos = Math.cos(angle);
         const sin = Math.sin(angle);
-        const lx = s * 2.2;
-        const ly = s * 0.5;
-
-        // Approximate ellipse with a quick diamond/kite shape
-        ctx.moveTo(px[i] + cos * lx, py[i] + sin * lx);
-        ctx.lineTo(px[i] - sin * ly, py[i] + cos * ly);
-        ctx.lineTo(px[i] - cos * lx * 0.5, py[i] - sin * lx * 0.5);
-        ctx.lineTo(px[i] + sin * ly, py[i] - cos * ly);
+        const lx = b.sz * 2.2;
+        const ly = b.sz * 0.5;
+        ctx.moveTo(b.x + cos * lx, b.y + sin * lx);
+        ctx.lineTo(b.x - sin * ly, b.y + cos * ly);
+        ctx.lineTo(b.x - cos * lx * 0.5, b.y - sin * lx * 0.5);
+        ctx.lineTo(b.x + sin * ly, b.y - cos * ly);
       }
-
       ctx.fill();
     }
 
-    // Batch trails in one stroke
+    // Batch trails
     ctx.strokeStyle = 'rgba(10, 10, 20, 0.12)';
     ctx.lineWidth = 0.6;
     ctx.beginPath();
     for (let i = 0; i < N; i++) {
-      ctx.moveTo(px[i], py[i]);
-      ctx.lineTo(px[i] - vx[i] * 3, py[i] - vy[i] * 3);
+      const b = boids[i];
+      ctx.moveTo(b.x, b.y);
+      ctx.lineTo(b.x - b.vx * 3, b.y - b.vy * 3);
     }
     ctx.stroke();
   }
