@@ -342,7 +342,11 @@ section {
   width: 100%;
   max-width: 400px;
   height: auto;
-  opacity: 0.85;
+  opacity: 0.75;
+}
+
+.story-illustration img[src$=".svg"] {
+  filter: none;
 }
 
 .cta-body {
