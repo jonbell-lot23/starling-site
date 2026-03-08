@@ -45,10 +45,11 @@ body {
   justify-content: center;
   background: linear-gradient(
     180deg,
-    #1a1a2e 0%,
-    #16213e 10%,
-    #c08050 40%,
-    #e8c07a 70%,
+    #5b7fa6 0%,
+    #8a7a9b 15%,
+    #c4887a 35%,
+    #dba56a 55%,
+    #e8c07a 75%,
     #e8c07a 100%
   );
   overflow: hidden;
