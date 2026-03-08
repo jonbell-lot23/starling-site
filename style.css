@@ -171,6 +171,13 @@ section {
   color: var(--text-primary);
 }
 
+.section-heading--cursive {
+  font-family: "Pacifico", cursive;
+  font-weight: 400;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  letter-spacing: -0.02em;
+}
+
 .section-body p {
   color: var(--text-secondary);
   margin-bottom: 20px;
