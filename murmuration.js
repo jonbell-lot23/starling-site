@@ -211,16 +211,26 @@
       b.vx += sepX * SEP_F;
       b.vy += sepY * SEP_F;
 
-      // Rotating wind that pulses — swirl then gather, swirl then gather
-      const windAngle = t * 0.004;
-      const windStrength = 0.02 + Math.sin(t * 0.008) * 0.03;
-      b.vx += Math.cos(windAngle) * windStrength;
-      b.vy += Math.sin(windAngle) * windStrength;
+      // Folding turn waves — position-dependent impulses that propagate
+      // through the flock, creating the rolling/folding murmuration effect.
+      // Two overlapping waves at different speeds and directions.
+      const wave1 = Math.sin(t * 0.006 + b.x * 0.004 + b.y * 0.002) * 0.06;
+      const wave2 = Math.cos(t * 0.004 + b.y * 0.005 - b.x * 0.001) * 0.04;
+      b.vx += wave1;
+      b.vy += wave2;
 
-      // Individual wander — enough to be swirly
-      b.wander += (Math.random() - 0.5) * 0.25;
-      b.vx += Math.cos(b.wander) * 0.05;
-      b.vy += Math.sin(b.wander) * 0.05;
+      // Periodic sharp turn — every ~3-5 sec a turn impulse rolls through
+      // Birds on one side turn first, creating the fold
+      const turnPhase = t * 0.005;
+      const turnStrength = Math.max(0, Math.sin(turnPhase)) * 0.08;
+      const birdPhase = (b.x + b.y) * 0.003; // position-dependent delay
+      b.vx += Math.cos(turnPhase + birdPhase) * turnStrength;
+      b.vy += Math.sin(turnPhase + birdPhase) * turnStrength;
+
+      // Light individual wander
+      b.wander += (Math.random() - 0.5) * 0.15;
+      b.vx += Math.cos(b.wander) * 0.03;
+      b.vy += Math.sin(b.wander) * 0.03;
 
       // Phantom scare
       if (scareActive) {
